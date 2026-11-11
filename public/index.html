@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta
+			name="description"
+			content="A hands-on support copilot lab for learning AI spend controls."
+		/>
+		<meta name="theme-color" content="#f4f2ed" />
+		<title>Fieldstone Support · AI Spend Control Lab</title>
+		<link rel="stylesheet" href="/styles.css" />
+		<script type="module" src="/app.js"></script>
+	</head>
+	<body>
+		<div class="app-shell">
+			<aside class="rail" aria-label="Primary navigation">
+				<a class="brand" href="#home" aria-label="Fieldstone Support home">
+					<span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+					<span class="brand-name">fieldstone<span>support</span></span>
+				</a>
+				<div class="workspace-label">WORKSPACE</div>
+				<nav class="nav-list">
+					<a class="nav-item" href="#inbox"><span class="nav-icon">⌂</span> Inbox <span class="nav-count">8</span></a>
+					<a class="nav-item active" href="#copilot" aria-current="page"><span class="nav-icon">✳</span> AI copilot</a>
+					<a class="nav-item" href="#customers"><span class="nav-icon">◉</span> Customers</a>
+					<a class="nav-item" href="#knowledge"><span class="nav-icon">▤</span> Knowledge base</a>
+				</nav>
+				<div class="rail-bottom">
+					<div class="team-card">
+						<span class="team-avatars" aria-hidden="true"><b>R</b><b>S</b><b>+</b></span>
+						<span><strong>Support team</strong><small>3 teammates</small></span>
+						<span class="more">···</span>
+					</div>
+					<a class="nav-item settings-link" href="#settings"><span class="nav-icon">⚙</span> Settings</a>
+					<div class="profile"><span class="profile-avatar">JQ</span><span><strong>Jordan Quinn</strong><small>Workspace admin</small></span><span class="more">⌄</span></div>
+				</div>
+			</aside>
+
+			<main class="main-content" id="home">
+				<header class="topbar">
+					<div class="breadcrumbs"><span>Support tools</span><span class="crumb-separator">/</span><strong>AI copilot</strong></div>
+					<div class="topbar-right"><span class="lab-badge"><span></span> COURSE LAB</span><button class="icon-button" type="button" aria-label="Help">?</button></div>
+				</header>
+
+				<div class="content-grid">
+					<section class="chat-column" aria-labelledby="page-title">
+						<div class="page-heading">
+							<div>
+								<p class="eyebrow">CUSTOMER OPERATIONS <span>·</span> AI WORKSPACE</p>
+								<h1 id="page-title">Support copilot</h1>
+								<p class="heading-copy">A little help with the hard tickets.</p>
+							</div>
+							<button class="new-chat" id="new-chat" type="button"><span aria-hidden="true">＋</span> New conversation</button>
+						</div>
+
+						<div class="conversation-meta">
+							<div class="persona-picker">
+								<span class="persona-avatar" id="persona-avatar">R</span>
+								<label for="persona-select" class="sr-only">Choose a demo persona</label>
+								<select id="persona-select" aria-label="Demo persona">
+									<option value="intern">Riley Chen · Support intern</option>
+								<option value="escalations">Sam Rivera · Escalations</option>
+								</select>
+								<span class="select-chevron" aria-hidden="true">⌄</span>
+							</div>
+							<span class="conversation-label"><span class="live-dot"></span> Ready for a question</span>
+						</div>
+
+						<div class="chat-card">
+							<div class="thread" id="thread" aria-live="polite" aria-relevant="additions text">
+								<div class="welcome-message">
+									<div class="copilot-avatar" aria-hidden="true"><span>✳</span></div>
+									<div class="welcome-body">
+										<div class="message-byline"><strong>Fieldstone copilot</strong><span>just now</span></div>
+										<div class="message-copy"><p>Hi Riley. I’m here to help you work through customer issues and write clear replies.</p><p>What are you looking at today?</p></div>
+										<div class="message-footnote"><span class="mini-sparkle">✳</span> AI-generated · review before sending</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="suggestions" aria-label="Suggested questions">
+								<span class="suggestion-label">TRY ASKING</span>
+								<div id="prompt-list" class="prompt-list"></div>
+							</div>
+
+							<form class="composer" id="chat-form">
+								<label for="message-input" class="sr-only">Ask the support copilot</label>
+								<textarea id="message-input" name="message" rows="2" maxlength="2000" placeholder="Ask a question or paste a customer issue…" required></textarea>
+								<div class="composer-footer">
+									<span class="composer-hint"><span aria-hidden="true">↵</span> Enter to send <span class="hint-divider">·</span> <span id="char-count">0</span>/2,000</span>
+									<button class="send-button" type="submit" id="send-button"><span>Send</span><span aria-hidden="true">↗</span></button>
+								</div>
+							</form>
+						</div>
+
+						<div class="privacy-note"><span aria-hidden="true">♧</span> This is a learning environment. Use synthetic customer details only.</div>
+					</section>
+
+					<aside class="inspector-column" aria-label="Request details">
+						<div class="inspector-heading"><div><p class="eyebrow">BEHIND THE SCENES</p><h2>Request path</h2></div><span class="inspector-menu" aria-hidden="true">···</span></div>
+						<div class="path-card">
+							<div class="path-card-top"><span class="path-icon" aria-hidden="true">⌁</span><span class="path-status"><span class="live-dot"></span> LIVE</span></div>
+							<p class="card-label">CURRENT ROUTE</p>
+							<strong class="route-name" id="route-name">Direct to Workers AI</strong>
+							<div class="route-visual" aria-label="Your app connects directly to Workers AI">
+								<div class="route-node app-node"><span class="node-symbol">▦</span><span>Your app</span></div>
+								<div class="route-line"><span></span></div>
+								<div class="route-node ai-node"><span class="node-symbol">✳</span><span>Workers AI</span></div>
+							</div>
+							<div class="model-row"><span>Model</span><code id="model-name">Loading…</code></div>
+							<div class="trace-result" id="trace-result"><span class="trace-empty-icon">◌</span><span>Send a prompt to see the request details.</span></div>
+						</div>
+
+						<div class="attribution-card">
+							<div class="attribution-title"><span class="attribution-icon">◎</span><div><strong>Who made this request?</strong><span>Demo identity</span></div></div>
+							<div class="attribution-person"><span class="tiny-avatar" id="tiny-avatar">R</span><div><strong id="persona-name">Riley Chen</strong><span id="persona-team">Support intern · interns</span></div></div>
+							<p class="attribution-caption">In the solution, the server adds trusted team metadata so the Gateway can attribute spend.</p>
+						</div>
+
+						<div class="lesson-card">
+							<div class="lesson-top"><span class="lesson-icon">✦</span><span class="lesson-tag">YOUR NEXT STEP</span></div>
+							<h3>Put a control point in the path</h3>
+							<p>Connect this request to AI Gateway, then use the team metadata to put a spend limit on intern traffic.</p>
+							<a href="https://developers.cloudflare.com/ai-gateway/" target="_blank" rel="noreferrer">Explore AI Gateway <span aria-hidden="true">↗</span></a>
+						</div>
+
+						<div class="inspector-footnote"><span class="footnote-dot"></span> Request details are generated by the Worker, never by the browser.</div>
+					</aside>
+				</div>
+			</main>
+		</div>
+	</body>
+</html>
