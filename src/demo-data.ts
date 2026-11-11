@@ -2,6 +2,7 @@ export const PERSONAS = {
 	intern: {
 		label: "Riley Chen",
 		team: "interns",
+		user_id: "demo-intern-01",
 		role: "Support intern",
 		instructions:
 			"You are responding as a support intern. Be concise, explain your reasoning plainly, and flag anything that needs an escalation.",
@@ -9,6 +10,7 @@ export const PERSONAS = {
 	escalations: {
 		label: "Sam Rivera",
 		team: "escalations",
+		user_id: "demo-escalations-01",
 		role: "Escalations engineer",
 		instructions:
 			"You are responding as an escalations engineer. Be precise and technical, and separate confirmed facts from hypotheses.",

@@ -11,8 +11,10 @@ export default defineConfig({
 			runWorkerFirst: ["/api/*"],
 		},
 		env: {
-			AI: bindings.ai({ dev: { remote: true } }),
 			ASSETS: bindings.assets(),
+			ACCOUNT_ID: bindings.text("your-account-id"),
+			GATEWAY_ID: bindings.text("support-copilot"),
+			CF_AIG_TOKEN: bindings.secret(),
 		},
 	},
 });

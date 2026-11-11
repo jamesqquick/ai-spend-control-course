@@ -1,42 +1,55 @@
-# AI Spend Control Course
+# AI Spend Control Course — Solution
 
-A small support-copilot app for learning how Cloudflare AI Gateway makes AI usage visible and controllable. The app keeps the same chat interface throughout the course; the request path changes in the Worker.
+This branch routes the Fieldstone support copilot through Cloudflare AI Gateway. The Worker attaches trusted team metadata and calls the `dynamic/support` route; the browser never receives the Gateway token or chooses a model.
 
-- `main` is the working starter: requests go directly to Workers AI.
-- `solution` is the completed course implementation: requests pass through AI Gateway, carry server-generated team metadata, and use a Dynamic Route.
+## Configure AI Gateway
 
-## Run the starter
+In the Cloudflare dashboard, in the account you will use for development:
+
+1. Create an AI Gateway with ID `support-copilot` and create an AI Gateway token for authenticated requests.
+2. Create a Dynamic Route named `support`.
+3. Add a route condition for `metadata.team` equal to `interns`, using `@cf/meta/llama-3.1-8b-instruct-fp8`.
+4. Route `metadata.team` equal to `escalations` to `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
+5. Save and deploy the route. Leave caching off while testing the team spend limit.
+
+The Worker sends five flat metadata values: `user_id`, `session_id`, `team`, `application`, and `case_id`. The persona is selected in the UI, but the Worker maps it to the team and user ID.
+
+## Run locally
 
 Requirements: Node.js 22.23+ and the Cloudflare `cf` CLI.
 
 ```sh
 npm install
 cf login
+```
+
+In `cloudflare.config.ts`, replace `your-account-id` with the Cloudflare account ID that owns the Gateway. Keep `GATEWAY_ID` as `support-copilot`, or change it to match your Gateway.
+
+```sh
+cp .dev.vars.example .dev.vars
+```
+
+Put the Gateway token value in `.dev.vars` as `CF_AIG_TOKEN`, then start the app:
+
+```sh
 export CLOUDFLARE_ACCOUNT_ID=your-account-id
 npm run dev
 ```
 
-Open the local URL printed by `cf dev`. Local development uses the remote Workers AI binding, so the Cloudflare account must have Workers AI enabled. No model API key is needed.
+Open the local URL printed by `cf dev`. Set `CLOUDFLARE_ACCOUNT_ID` when your login has more than one account. The Gateway account must have Workers AI enabled.
 
-Set `CLOUDFLARE_ACCOUNT_ID` when your Cloudflare login has more than one account. Find the ID in the account details in the Cloudflare dashboard.
+Choose Riley to send `team: interns`; choose Sam to send `team: escalations`. The Request Path panel shows the model, provider, cache status, response status, and Gateway log ID returned for each request. A spend-limit response is shown in the chat and remains visible in the request trace.
 
-The starter calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` directly. The browser sends a persona ID, not trusted team metadata; the Worker maps that identity to server-side attributes in the solution.
+## Observe the spend limit
 
-## Course path
+Create a Spend Limit rule in AI Gateway scoped to `team = interns`, then send a prompt as Riley and as Sam. The interns rule should affect Riley's requests while Sam's requests continue through the escalation route. Spend estimates can be delayed and may overshoot the configured limit.
 
-1. Send a prompt and inspect the direct Workers AI request.
-2. Add AI Gateway between the Worker and the model.
-3. Attach trusted `team`, `user_id`, and `session_id` metadata on the server.
-4. Route intern and escalation requests with a Dynamic Route.
-5. Add a spend limit for the `interns` team, then compare both personas.
+## Deploy
 
-Use synthetic support questions only. If you deploy the app while learning, put it behind Cloudflare Access; the starter endpoint is intentionally a simple teaching fixture.
-
-## Compare with the solution
+Deploy with the local secrets file. `.dev.vars` is gitignored:
 
 ```sh
-git switch solution
-git diff main..solution
+cf deploy --secrets-file .dev.vars
 ```
 
-The solution README has the Gateway setup steps and local configuration. Gateway policies and spend limits are configured in the Cloudflare dashboard; this repository contains the app-side request changes.
+If you deploy this teaching app, protect it with Cloudflare Access. Its demo persona selector is not user authentication.

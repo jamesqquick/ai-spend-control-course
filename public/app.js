@@ -83,12 +83,12 @@ async function sendMessage(text) {
 			body: JSON.stringify({ personaId: personaSelect.value, sessionId, messages }),
 		});
 		const result = await response.json();
+		if (result.trace) updateTrace(result.trace);
 		if (!response.ok) throw new Error(result.error || `Request failed (${response.status}).`);
 
 		messages.push({ role: "assistant", content: result.message });
 		pending.remove();
 		addMessage("assistant", result.message);
-		updateTrace(result.trace);
 	} catch (error) {
 		pending.remove();
 		messages.pop();
@@ -140,8 +140,16 @@ async function initialize() {
 			? "Through AI Gateway"
 			: "Direct to Workers AI";
 		if (config.mode === "gateway") {
-			document.querySelector(".ai-node span:last-child").textContent = "AI Gateway";
-			document.querySelector(".route-visual").setAttribute("aria-label", "Your app connects through AI Gateway to Workers AI");
+			const routeVisual = document.querySelector(".route-visual");
+			routeVisual.classList.add("gateway-route");
+			routeVisual.setAttribute("aria-label", "Your app connects through AI Gateway to Workers AI");
+			document.querySelector(".gateway-node").hidden = false;
+			document.querySelector(".gateway-line").hidden = false;
+			document.querySelector("#route-name").textContent = `AI Gateway · ${config.model}`;
+			document.querySelector("#attribution-caption").textContent = "Team, user, session, and case metadata are attached by the Worker.";
+			document.querySelector("#lesson-title").textContent = "Spend is attributed by team";
+			document.querySelector("#lesson-copy").textContent = "Use the team=interns metadata filter to put a spend limit on intern traffic.";
+			document.querySelector("#lesson-link").textContent = "Open AI Gateway docs ↗";
 		}
 		document.querySelector("#prompt-list").innerHTML = config.prompts.map((prompt) =>
 			`<button class="prompt-chip" type="button" data-prompt="${escapeHtml(prompt.text)}">${escapeHtml(prompt.label)}</button>`,

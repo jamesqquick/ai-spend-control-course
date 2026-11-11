@@ -138,6 +138,8 @@ h2 { margin: 0; font-family: Manrope, sans-serif; font-size: 16px; font-weight: 
 .route-name { display: block; color: #354638; font-family: Manrope, sans-serif; font-size: 12px; font-weight: 700; }
 .route-visual { display: flex; align-items: center; margin: 17px -1px 16px; }
 .route-node { display: flex; width: 81px; flex: 0 0 auto; flex-direction: column; align-items: center; gap: 6px; padding: 9px 4px 8px; border: 1px solid #e8e9e2; border-radius: 7px; background: #fff; color: #879086; font-size: 8px; }
+.route-node[hidden], .route-line[hidden] { display: none !important; }
+.gateway-route .route-node { width: 67px; }
 .node-symbol { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 6px; background: #f2f5ef; color: #6d886d; font-size: 13px; }
 .ai-node .node-symbol { background: #f3eee5; color: #a6824d; }
 .route-line { position: relative; height: 1px; flex: 1; border-top: 1px dashed #cdd5c8; }
