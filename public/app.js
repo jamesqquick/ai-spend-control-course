@@ -1,164 +1,126 @@
-const form = document.querySelector("#chat-form");
-const input = document.querySelector("#message-input");
-const thread = document.querySelector("#thread");
-const sendButton = document.querySelector("#send-button");
-const personaSelect = document.querySelector("#persona-select");
-const traceResult = document.querySelector("#trace-result");
-const messages = [];
-let sessionId = createSessionId();
+const buttons = [...document.querySelectorAll(".caller-button")];
+const receipt = document.querySelector("#receipt");
+const breakdown = document.querySelector("#breakdown");
+const breakdownEmpty = document.querySelector("#breakdown-empty");
+const requestCount = document.querySelector("#request-count");
 let config;
-sendButton.disabled = true;
-input.disabled = true;
+let totalRequests = 0;
+let isRunning = false;
+const breakdownCounts = new Map();
 
-const escapeHtml = (value) =>
-	value.replace(/[&<>"']/g, (character) => ({
-		"&": "&amp;",
-		"<": "&lt;",
-		">": "&gt;",
-		'"': "&quot;",
-		"'": "&#39;",
-	})[character]);
-
-function createSessionId() {
-	return crypto.randomUUID().replaceAll("-", "");
+function appendCell(row, text) {
+	const cell = document.createElement("td");
+	cell.textContent = text ?? "";
+	row.append(cell);
 }
 
-function currentPersona() {
-	return config.personas.find((persona) => persona.id === personaSelect.value);
+function renderBreakdown() {
+	breakdown.replaceChildren();
+	breakdownEmpty.hidden = breakdownCounts.size > 0;
+	for (const [label, count] of breakdownCounts) {
+		const item = document.createElement("div");
+		item.className = "breakdown-item";
+		const heading = document.createElement("div");
+		heading.className = "breakdown-item-heading";
+		const name = document.createElement("strong");
+		name.textContent = label;
+		const tally = document.createElement("span");
+		tally.textContent = `${count} of ${totalRequests}`;
+		heading.append(name, tally);
+		const track = document.createElement("div");
+		track.className = "breakdown-track";
+		const fill = document.createElement("span");
+		fill.className = "breakdown-fill";
+		fill.style.width = `${(count / totalRequests) * 100}%`;
+		track.append(fill);
+		item.append(heading, track);
+		breakdown.append(item);
+	}
 }
 
-function updatePersona() {
-	const persona = currentPersona();
-	if (!persona) return;
-	document.querySelector("#persona-avatar").textContent = persona.label[0];
-	document.querySelector("#tiny-avatar").textContent = persona.label[0];
-	document.querySelector("#persona-name").textContent = persona.label;
-	document.querySelector("#persona-team").textContent = `${persona.role} · ${persona.team}`;
+function addReceipt(result, caller) {
+	const emptyRow = receipt.querySelector(".receipt-empty-row");
+	emptyRow?.remove();
+	const row = document.createElement("tr");
+	row.className = `receipt-row receipt-${result.status || "error"}`;
+	if (result.error) row.title = result.error;
+	const callerInfo = config.callers.find((item) => item.id === caller);
+	const model = result.modelSize && result.model
+		? `${result.modelSize} · ${result.model}`
+		: result.model ?? config.model;
+	const status = result.status === "ok"
+		? "OK"
+		: result.status === "blocked"
+			? "Blocked"
+			: result.status === "downgraded"
+				? "Downgraded"
+				: "Error";
+	appendCell(row, new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" }));
+	appendCell(row, result.callerLabel ?? callerInfo?.label ?? caller);
+	appendCell(row, result.seenAs ?? "Unavailable");
+	appendCell(row, model);
+	appendCell(row, result.statusCode ? `${status} · HTTP ${result.statusCode}` : status);
+	receipt.prepend(row);
+
+	totalRequests += 1;
+	requestCount.textContent = `${totalRequests} ${totalRequests === 1 ? "request" : "requests"}`;
+	const seenAs = result.seenAs ?? "Unavailable";
+	breakdownCounts.set(seenAs, (breakdownCounts.get(seenAs) ?? 0) + 1);
+	renderBreakdown();
 }
 
-function addMessage(role, text, state = "") {
-	const row = document.createElement("div");
-	row.className = `message-row ${role}${state ? ` ${state}` : ""}`;
-	const author = role === "user" ? currentPersona().label : "Fieldstone copilot";
-	const icon = role === "user" ? currentPersona().label[0] : "✳";
-	const avatarClass = role === "user" ? "persona-avatar" : "copilot-avatar";
-	const content = state === "pending"
-		? '<span class="typing-dots" aria-label="Thinking"><i></i><i></i><i></i></span>'
-		: escapeHtml(text).replaceAll("\n", "<br>");
-	row.innerHTML = `<span class="${avatarClass}" aria-hidden="true">${escapeHtml(icon)}</span><div class="message-body"><div class="message-byline"><strong>${escapeHtml(author)}</strong><span>${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span></div><div class="message-copy">${content}</div></div>`;
-	thread.append(row);
-	thread.scrollTop = thread.scrollHeight;
-	return row;
-}
-
-function updateTrace(trace) {
-	traceResult.classList.add("has-result");
-	const facts = [
-		`HTTP ${trace.status}`,
-		`${trace.durationMs} ms`,
-		trace.logId ? `log ${trace.logId}` : null,
-		trace.provider ? `provider ${trace.provider}` : null,
-		trace.cacheStatus ? `cache ${trace.cacheStatus}` : null,
-	].filter(Boolean);
-	traceResult.innerHTML = `<span class="trace-empty-icon" aria-hidden="true">✓</span><span>${facts.map(escapeHtml).join(" · ")}</span>`;
-	if (trace.model) document.querySelector("#model-name").textContent = trace.model;
-}
-
-async function sendMessage(text) {
-	const cleanText = text.trim();
-	if (!cleanText || sendButton.disabled) return;
-
-	messages.push({ role: "user", content: cleanText });
-	addMessage("user", cleanText);
-	const pending = addMessage("assistant", "", "pending");
-	input.value = "";
-	document.querySelector("#char-count").textContent = "0";
-	sendButton.disabled = true;
-	input.disabled = true;
-
+async function runRequest(caller) {
+	const startedAt = performance.now();
 	try {
-		const response = await fetch("/api/chat", {
+		const response = await fetch("/api/run", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ personaId: personaSelect.value, sessionId, messages }),
+			body: JSON.stringify({ caller }),
 		});
-		const result = await response.json();
-		if (!response.ok) throw new Error(result.error || `Request failed (${response.status}).`);
-
-		messages.push({ role: "assistant", content: result.message });
-		pending.remove();
-		addMessage("assistant", result.message);
-		updateTrace(result.trace);
+		const payload = await response.json().catch(() => null);
+		const result = payload && typeof payload === "object" ? payload : {};
+		if (!result.status) result.status = response.ok ? "ok" : "error";
+		if (!result.durationMs) result.durationMs = Math.round(performance.now() - startedAt);
+		addReceipt(result, caller);
 	} catch (error) {
-		pending.remove();
-		messages.pop();
-		thread.querySelector(".message-row.user:last-of-type")?.remove();
-		addMessage("assistant", error instanceof Error ? error.message : "The request failed.", "error");
-	} finally {
-		sendButton.disabled = false;
-		input.disabled = false;
-		input.focus();
+		addReceipt({
+			status: "error",
+			seenAs: config.mode === "gateway" ? "Gateway status unavailable" : "Not routed through Gateway",
+			model: config.model,
+			error: error instanceof Error ? error.message : "The request failed.",
+		}, caller);
 	}
 }
 
-function resetConversation() {
-	messages.length = 0;
-	sessionId = createSessionId();
-	thread.querySelectorAll(".message-row").forEach((row) => row.remove());
-	input.value = "";
-	document.querySelector("#char-count").textContent = "0";
-	traceResult.classList.remove("has-result");
-	traceResult.innerHTML = '<span class="trace-empty-icon">◌</span><span>Send a prompt to see the request details.</span>';
-	if (config?.model) document.querySelector("#model-name").textContent = config.model;
+function setRunning(running, activeButton = null) {
+	isRunning = running;
+	for (const button of buttons) {
+		button.disabled = running || !config;
+		button.querySelector(".run-spinner").hidden = !running || button !== activeButton;
+		if (running && button === activeButton) button.setAttribute("aria-busy", "true");
+		else button.removeAttribute("aria-busy");
+	}
 }
 
-form.addEventListener("submit", (event) => {
-	event.preventDefault();
-	void sendMessage(input.value);
-});
-
-input.addEventListener("input", () => {
-	document.querySelector("#char-count").textContent = String(input.value.length);
-});
-
-input.addEventListener("keydown", (event) => {
-	if (event.key === "Enter" && !event.shiftKey) {
-		event.preventDefault();
-		form.requestSubmit();
-	}
-});
-
-personaSelect.addEventListener("change", updatePersona);
-document.querySelector("#new-chat").addEventListener("click", resetConversation);
+for (const button of buttons) {
+	button.addEventListener("click", async () => {
+		if (!config || isRunning) return;
+		const caller = button.dataset.caller;
+		const count = Math.max(1, Number(button.dataset.count) || 1);
+		setRunning(true, button);
+		for (let index = 0; index < count; index += 1) await runRequest(caller);
+		setRunning(false);
+	});
+}
 
 async function initialize() {
 	try {
-		const configResponse = await fetch("/api/config");
-		config = await configResponse.json();
-		document.querySelector("#model-name").textContent = config.model;
-		document.querySelector("#route-name").textContent = config.mode === "gateway"
-			? "Through AI Gateway"
-			: "Direct to Workers AI";
-		if (config.mode === "gateway") {
-			document.querySelector(".ai-node span:last-child").textContent = "AI Gateway";
-			document.querySelector(".route-visual").setAttribute("aria-label", "Your app connects through AI Gateway to Workers AI");
-		}
-		document.querySelector("#prompt-list").innerHTML = config.prompts.map((prompt) =>
-			`<button class="prompt-chip" type="button" data-prompt="${escapeHtml(prompt.text)}">${escapeHtml(prompt.label)}</button>`,
-		).join("");
-		document.querySelectorAll(".prompt-chip").forEach((button) => {
-			button.addEventListener("click", () => {
-				input.value = button.dataset.prompt;
-				input.dispatchEvent(new Event("input"));
-				input.focus();
-			});
-		});
-		updatePersona();
-		sendButton.disabled = false;
-		input.disabled = false;
-	} catch {
-		document.querySelector("#model-name").textContent = "Unable to load configuration";
-		traceResult.textContent = "The app could not load its Worker configuration. Refresh to try again.";
+		const response = await fetch("/api/config");
+		if (!response.ok) throw new Error("Could not load lab configuration.");
+		config = await response.json();
+		setRunning(false);
+	} catch (error) {
+		console.error("Unable to load lab configuration.", error);
 	}
 }
 
