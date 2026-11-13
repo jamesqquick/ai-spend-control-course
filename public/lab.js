@@ -5,7 +5,7 @@ const breakdownEmpty = document.querySelector("#breakdown-empty");
 const requestCount = document.querySelector("#request-count");
 let config;
 let totalRequests = 0;
-let isRunning = false;
+const activeCallers = new Set();
 const breakdownCounts = new Map();
 
 function appendCell(row, text) {
@@ -90,24 +90,29 @@ async function runRequest(caller) {
 	}
 }
 
-function setRunning(running, activeButton = null) {
-	isRunning = running;
+function renderButtons() {
 	for (const button of buttons) {
+		const running = activeCallers.has(button.dataset.caller);
 		button.disabled = running || !config;
-		button.querySelector(".run-spinner").hidden = !running || button !== activeButton;
-		if (running && button === activeButton) button.setAttribute("aria-busy", "true");
+		button.querySelector(".run-spinner").hidden = !running;
+		if (running) button.setAttribute("aria-busy", "true");
 		else button.removeAttribute("aria-busy");
 	}
 }
 
 for (const button of buttons) {
 	button.addEventListener("click", async () => {
-		if (!config || isRunning) return;
 		const caller = button.dataset.caller;
+		if (!config || activeCallers.has(caller)) return;
 		const count = Math.max(1, Number(button.dataset.count) || 1);
-		setRunning(true, button);
-		for (let index = 0; index < count; index += 1) await runRequest(caller);
-		setRunning(false);
+		activeCallers.add(caller);
+		renderButtons();
+		try {
+			for (let index = 0; index < count; index += 1) await runRequest(caller);
+		} finally {
+			activeCallers.delete(caller);
+			renderButtons();
+		}
 	});
 }
 
@@ -116,7 +121,7 @@ async function initialize() {
 		const response = await fetch("/api/config");
 		if (!response.ok) throw new Error("Could not load lab configuration.");
 		config = await response.json();
-		setRunning(false);
+		renderButtons();
 	} catch (error) {
 		console.error("Unable to load lab configuration.", error);
 	}

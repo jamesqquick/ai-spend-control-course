@@ -50,7 +50,7 @@ async function run(request: Request): Promise<Response> {
 			MODEL,
 			{
 				messages: [{ role: "user", content: CALLERS[caller].prompt }],
-				max_tokens: 256,
+				max_tokens: 8,
 			},
 			{
 				gateway: {

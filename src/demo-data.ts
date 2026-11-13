@@ -1,21 +1,23 @@
+const PROMPT = "Reply with OK only.";
+
 export const CALLERS = {
 	free: {
 		label: "Free user",
 		tier: "free",
 		task: "quick-summary",
-		prompt: "Summarize this ticket in one line: my password reset email never arrived.",
+		prompt: PROMPT,
 	},
 	pro: {
 		label: "Pro user",
 		tier: "pro",
 		task: "deep-analysis",
-		prompt: "Analyze this ticket and propose a fix plan: SSO login fails for 30% of our users since Monday.",
+		prompt: PROMPT,
 	},
 	bot: {
 		label: "Background bot",
 		tier: "background",
 		task: "ticket-review",
-		prompt: "Review this ticket and tag it with one category: the printer shows error 50.4.",
+		prompt: PROMPT,
 	},
 } as const;
 
