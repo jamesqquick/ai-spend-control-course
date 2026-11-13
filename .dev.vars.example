@@ -1,2 +1,1 @@
-# Used only on the solution branch. Create a Gateway token in Cloudflare and set it here.
-CF_AIG_TOKEN=replace-with-your-ai-gateway-token
+# The Workers AI binding authenticates Gateway requests; no local secrets are required.
