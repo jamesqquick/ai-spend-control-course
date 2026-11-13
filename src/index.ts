@@ -47,7 +47,7 @@ async function run(request: Request): Promise<Response> {
 	try {
 		await env.AI.run(MODEL, {
 			messages: [{ role: "user", content: CALLERS[caller].prompt }],
-			max_tokens: 256,
+			max_tokens: 8,
 		});
 		return Response.json({
 			caller,
