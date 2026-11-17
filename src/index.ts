@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 
 import { CALLERS, type Caller } from "./demo-data";
+import { getGatewayMode, getGatewayTrace } from "./gateway-trace";
 
 const MODEL = "dynamic/support";
 
@@ -10,7 +11,7 @@ export default {
 
 		if (url.pathname === "/api/config" && request.method === "GET") {
 			return Response.json({
-				mode: "gateway",
+				mode: getGatewayMode(),
 				model: MODEL,
 				callers: (Object.keys(CALLERS) as Caller[]).map((id) => ({
 					id,
@@ -70,7 +71,7 @@ async function run(request: Request): Promise<Response> {
 		errorMessage = error instanceof Error ? error.message : "The model request failed.";
 	}
 
-	const trace = await getGatewayTrace();
+	const trace = await getGatewayTrace(MODEL);
 	const status = classifyStatus(trace.statusCode, failed, errorMessage, caller, trace.model);
 	return Response.json(
 		{
@@ -86,25 +87,6 @@ async function run(request: Request): Promise<Response> {
 		},
 		{ status: responseStatus(status, trace.statusCode) },
 	);
-}
-
-async function getGatewayTrace() {
-	const logId = env.AI.aiGatewayLogId ?? null;
-	const trace = { model: MODEL, statusCode: null, metadata: null, logId, available: false };
-	if (!logId) return trace;
-
-	try {
-		const log = await env.AI.gateway(env.GATEWAY_ID).getLog(logId);
-		return {
-			model: log.model || MODEL,
-			statusCode: log.status_code,
-			metadata: log.metadata ?? null,
-			logId,
-			available: true,
-		};
-	} catch {
-		return trace;
-	}
 }
 
 function isCaller(value: unknown): value is Caller {
