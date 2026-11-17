@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 
 import { CALLERS, type Caller } from "./demo-data";
+import { getGatewayMode, getGatewayTrace } from "./gateway-trace";
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
@@ -10,7 +11,7 @@ export default {
 
 		if (url.pathname === "/api/config" && request.method === "GET") {
 			return Response.json({
-				mode: "direct",
+				mode: getGatewayMode(),
 				model: MODEL,
 				callers: (Object.keys(CALLERS) as Caller[]).map((id) => ({
 					id,
@@ -49,6 +50,7 @@ async function run(request: Request): Promise<Response> {
 			messages: [{ role: "user", content: CALLERS[caller].prompt }],
 			max_tokens: 8,
 		});
+		const trace = await getGatewayTrace(MODEL);
 		return Response.json({
 			caller,
 			callerLabel: CALLERS[caller].label,
@@ -57,9 +59,10 @@ async function run(request: Request): Promise<Response> {
 			modelSize: "big",
 			status: "ok",
 			durationMs: Date.now() - startedAt,
-			logId: null,
+			logId: trace.logId,
 		});
 	} catch (error) {
+		const trace = await getGatewayTrace(MODEL);
 		return Response.json(
 			{
 				caller,
@@ -70,7 +73,7 @@ async function run(request: Request): Promise<Response> {
 				status: "error",
 				error: error instanceof Error ? error.message : "The model request failed.",
 				durationMs: Date.now() - startedAt,
-				logId: null,
+				logId: trace.logId,
 			},
 			{ status: 502 },
 		);
