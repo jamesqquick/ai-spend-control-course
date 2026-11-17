@@ -23,8 +23,8 @@ The bot button sends 4 requests in sequence. The buttons use fixed synthetic pro
 ## Course path
 
 1. Run all 3 callers on `starter`. The receipt says they are not routed through Gateway, and the Gateway logs stay empty.
-2. Add AI Gateway to the Worker. Requests appear in Gateway logs, but they have no caller metadata yet.
-3. Add `caller`, `tier`, and `task` metadata from the Worker's caller table. Route the quick summary to a smaller model, keep the pro analysis on a larger model, and leave the bot on the larger model.
+2. Add AI Gateway to the Worker. Requests appear in Gateway logs, and the receipt reads the logged model and status. Before caller metadata is added, the receipt shows `anonymous`.
+3. Add `caller`, `tier`, and `task` metadata from the Worker's caller table. The receipt then shows the metadata recorded by Gateway. Route the quick summary to a smaller model, keep the pro analysis on a larger model, and leave the bot on the larger model.
 4. Give the bot its own hard cap or route limit. The receipt shows when Gateway blocks it or answers it with the smaller model.
 
 ## Compare with the solution
@@ -33,4 +33,4 @@ The bot button sends 4 requests in sequence. The buttons use fixed synthetic pro
 git diff starter..solution
 ```
 
-Gateway IDs, Dynamic Route steps, and spend limits live in AI Gateway configuration. The Worker reads each Gateway log to show its recorded metadata, model, and status in the receipt.
+Gateway IDs, Dynamic Route steps, and spend limits live in AI Gateway configuration. The starter already reads each Gateway log, so no separate receipt-code change is needed while following the course.

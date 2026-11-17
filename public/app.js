@@ -85,7 +85,7 @@ async function runRequest(caller) {
 	} catch (error) {
 		addReceipt({
 			status: "error",
-			seenAs: config.mode === "gateway" ? "Gateway status unavailable" : "Not routed through Gateway",
+			seenAs: "Gateway status unavailable",
 			model: config.model,
 			error: error instanceof Error ? error.message : "The request failed.",
 		}, caller);
