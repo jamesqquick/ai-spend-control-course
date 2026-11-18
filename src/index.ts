@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 
-import { CALLERS, type Caller } from "./demo-data";
+import { USER_TYPES, type UserType } from "./demo-data";
 import { getGatewayMode, getGatewayTrace } from "./gateway-trace";
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
@@ -13,9 +13,9 @@ export default {
 			return Response.json({
 				mode: getGatewayMode(),
 				model: MODEL,
-				callers: (Object.keys(CALLERS) as Caller[]).map((id) => ({
+				userTypes: (Object.keys(USER_TYPES) as UserType[]).map((id) => ({
 					id,
-					label: CALLERS[id].label,
+					label: USER_TYPES[id].label,
 				})),
 			});
 		}
@@ -39,9 +39,9 @@ async function run(request: Request): Promise<Response> {
 	if (typeof body !== "object" || body === null) {
 		return Response.json({ error: "Request body must be a JSON object." }, { status: 400 });
 	}
-	const caller = "caller" in body ? body.caller : undefined;
-	if (!isCaller(caller)) {
-		return Response.json({ error: "Choose a valid caller." }, { status: 400 });
+	const userType = "user_type" in body ? body.user_type : undefined;
+	if (!isUserType(userType)) {
+		return Response.json({ error: "Choose a valid user type." }, { status: 400 });
 	}
 
 	const startedAt = Date.now();
@@ -49,7 +49,7 @@ async function run(request: Request): Promise<Response> {
 	let errorMessage: string | undefined;
 	try {
 		await env.AI.run(MODEL, {
-			messages: [{ role: "user", content: CALLERS[caller].prompt }],
+			messages: [{ role: "user", content: USER_TYPES[userType].prompt }],
 			max_tokens: 8,
 		});
 	} catch (error) {
@@ -58,11 +58,11 @@ async function run(request: Request): Promise<Response> {
 	}
 
 	const trace = await getGatewayTrace(MODEL);
-	const status = classifyStatus(trace.statusCode, failed, errorMessage, caller, trace.model);
+	const status = classifyStatus(trace.statusCode, failed, errorMessage, userType, trace.model);
 	return Response.json(
 		{
-			caller,
-			callerLabel: CALLERS[caller].label,
+			user_type: userType,
+			userTypeLabel: USER_TYPES[userType].label,
 			seenAs: trace.available
 				? formatMetadata(trace.metadata)
 				: getGatewayMode() === "gateway"
@@ -80,8 +80,8 @@ async function run(request: Request): Promise<Response> {
 	);
 }
 
-function isCaller(value: unknown): value is Caller {
-	return typeof value === "string" && Object.prototype.hasOwnProperty.call(CALLERS, value);
+function isUserType(value: unknown): value is UserType {
+	return typeof value === "string" && Object.prototype.hasOwnProperty.call(USER_TYPES, value);
 }
 
 function formatMetadata(metadata: Record<string, string | number | boolean | null | bigint> | null | undefined): string {
@@ -93,12 +93,12 @@ function classifyStatus(
 	statusCode: number | null | undefined,
 	failed: boolean,
 	errorMessage: string | undefined,
-	caller: Caller,
+	userType: UserType,
 	model: string,
 ): "ok" | "error" | "blocked" | "downgraded" {
 	if (statusCode === 429 || /spend limit/i.test(errorMessage ?? "")) return "blocked";
 	if (failed || (statusCode !== null && statusCode !== undefined && statusCode >= 400)) return "error";
-	if (caller === "bot" && modelSize(model) === "small") return "downgraded";
+	if (userType === "bot" && modelSize(model) === "small") return "downgraded";
 	return "ok";
 }
 
