@@ -829,7 +829,7 @@ body {
 	box-shadow: 0 10px 28px rgb(42 53 40 / 3%);
 }
 
-.caller-card {
+.user-type-card {
 	padding: 22px;
 }
 
@@ -848,14 +848,14 @@ body {
 	letter-spacing: -.4px;
 }
 
-.caller-actions {
+.user-type-actions {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 12px;
 	margin-top: 18px;
 }
 
-.caller-button {
+.user-type-button {
 	display: flex;
 	min-height: 160px;
 	flex-direction: column;
@@ -871,8 +871,8 @@ body {
 	transition: border-color .15s, box-shadow .15s, transform .15s, background .15s;
 }
 
-.caller-button:hover:not(:disabled),
-.caller-button:focus-visible {
+.user-type-button:hover:not(:disabled),
+.user-type-button:focus-visible {
 	transform: translateY(-2px);
 	border-color: #89a28a;
 	background: white;
@@ -880,28 +880,28 @@ body {
 	outline: none;
 }
 
-.caller-button:focus-visible {
+.user-type-button:focus-visible {
 	box-shadow: 0 0 0 3px rgb(94 128 98 / 24%);
 }
 
-.caller-button:disabled {
+.user-type-button:disabled {
 	cursor: not-allowed;
 	opacity: .62;
 }
 
-.caller-button strong {
+.user-type-button strong {
 	color: #354b39;
 	font-size: 14px;
 	font-weight: 700;
 }
 
-.caller-button > span:not(.run-label) {
+.user-type-button > span:not(.run-label) {
 	color: #7b857b;
 	font-size: 11px;
 	line-height: 1.5;
 }
 
-.caller-button .run-label {
+.user-type-button .run-label {
 	display: flex;
 	width: 100%;
 	align-items: center;
@@ -942,12 +942,12 @@ body {
 	}
 }
 
-.caller-button-bot {
+.user-type-button-bot {
 	border-color: #ecdcbf;
 	background: #fffdf8;
 }
 
-.caller-button-bot .run-label {
+.user-type-button-bot .run-label {
 	color: #8b6731;
 }
 
@@ -1093,11 +1093,11 @@ body {
 }
 
 @media (max-width: 900px) {
-	.caller-actions {
+	.user-type-actions {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
-	.caller-button-bot {
+	.user-type-button-bot {
 		grid-column: 1 / -1;
 	}
 
@@ -1123,7 +1123,7 @@ body {
 		font-size: 30px;
 	}
 
-	.caller-card,
+	.user-type-card,
 	.breakdown-card,
 	.receipt-card {
 		padding: 16px;
@@ -1133,11 +1133,11 @@ body {
 		align-items: flex-start;
 	}
 
-	.caller-actions {
+	.user-type-actions {
 		grid-template-columns: 1fr;
 	}
 
-	.caller-button-bot {
+	.user-type-button-bot {
 		grid-column: auto;
 	}
 
