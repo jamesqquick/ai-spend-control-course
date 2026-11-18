@@ -25,8 +25,8 @@
 			"window": 3600
 		},
 		"outputs": {
-			"success": { "elementId": "big" },
-			"fallback": { "elementId": "small" }
+			"success": { "elementId": "higher_cost" },
+			"fallback": { "elementId": "lower_cost" }
 		}
 	},
 	{
@@ -36,12 +36,12 @@
 			"conditions": { "metadata.user_type": { "$eq": "free" } }
 		},
 		"outputs": {
-			"true": { "elementId": "small" },
-			"false": { "elementId": "big" }
+			"true": { "elementId": "lower_cost" },
+			"false": { "elementId": "higher_cost" }
 		}
 	},
 	{
-		"id": "small",
+		"id": "lower_cost",
 		"type": "model",
 		"properties": {
 			"provider": "workers-ai",
@@ -55,7 +55,7 @@
 		}
 	},
 	{
-		"id": "big",
+		"id": "higher_cost",
 		"type": "model",
 		"properties": {
 			"provider": "workers-ai",

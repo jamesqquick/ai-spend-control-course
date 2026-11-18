@@ -33,7 +33,7 @@ The final route uses only `metadata.user_type`:
 | `pro` | GPT-OSS 120B, `@cf/openai/gpt-oss-120b`, with GPT-OSS 20B as backup |
 | `bot` | GPT-OSS 120B for 3 requests per hour, then GPT-OSS 20B |
 
-The `bot_budget` step counts only bot requests, keyed by `metadata.user_type`. Its allowance applies to the big model, not total requests or dollar spend. Free and Pro requests bypass that step. To change the allowance, edit its `limit` or `window` and publish another route version. To try a different small model without changing the Worker, edit the `small` step's model and publish a new version.
+The `bot_budget` step counts only bot requests, keyed by `metadata.user_type`. Its allowance applies to the big model, not total requests or dollar spend. Free and Pro requests bypass that step. To change the allowance, edit its `limit` or `window` and publish another route version. To try a different small model without changing the Worker, edit the `lower_cost` step's model and publish a new version.
 
 The browser submits `POST /api/run` with `user_type` set to `free`, `pro`, or `bot`, for example `{ "user_type": "free" }`. The Worker validates the type against `USER_TYPES` in `src/demo-data.ts` before attaching `{ user_type: userType }` as Gateway metadata. In a real application, derive the user type from trusted account or job information.
 
