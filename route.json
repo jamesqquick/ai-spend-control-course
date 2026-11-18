@@ -1,0 +1,86 @@
+[
+	{
+		"id": "start",
+		"type": "start",
+		"outputs": { "next": { "elementId": "is_bot" } }
+	},
+	{
+		"id": "is_bot",
+		"type": "conditional",
+		"properties": {
+			"conditions": { "metadata.user_type": { "$eq": "bot" } }
+		},
+		"outputs": {
+			"true": { "elementId": "bot_budget" },
+			"false": { "elementId": "is_free" }
+		}
+	},
+	{
+		"id": "bot_budget",
+		"type": "rate",
+		"properties": {
+			"limitType": "count",
+			"key": "metadata.user_type",
+			"limit": 3,
+			"window": 3600
+		},
+		"outputs": {
+			"success": { "elementId": "big" },
+			"fallback": { "elementId": "small" }
+		}
+	},
+	{
+		"id": "is_free",
+		"type": "conditional",
+		"properties": {
+			"conditions": { "metadata.user_type": { "$eq": "free" } }
+		},
+		"outputs": {
+			"true": { "elementId": "small" },
+			"false": { "elementId": "big" }
+		}
+	},
+	{
+		"id": "small",
+		"type": "model",
+		"properties": {
+			"provider": "workers-ai",
+			"model": "@cf/openai/gpt-oss-20b",
+			"timeout": 30000,
+			"retries": 0
+		},
+		"outputs": {
+			"success": { "elementId": "end" },
+			"fallback": { "elementId": "end" }
+		}
+	},
+	{
+		"id": "big",
+		"type": "model",
+		"properties": {
+			"provider": "workers-ai",
+			"model": "@cf/openai/gpt-oss-120b",
+			"timeout": 60000,
+			"retries": 0
+		},
+		"outputs": {
+			"success": { "elementId": "end" },
+			"fallback": { "elementId": "backup" }
+		}
+	},
+	{
+		"id": "backup",
+		"type": "model",
+		"properties": {
+			"provider": "workers-ai",
+			"model": "@cf/openai/gpt-oss-20b",
+			"timeout": 60000,
+			"retries": 0
+		},
+		"outputs": {
+			"success": { "elementId": "end" },
+			"fallback": { "elementId": "end" }
+		}
+	},
+	{ "id": "end", "type": "end", "outputs": {} }
+]

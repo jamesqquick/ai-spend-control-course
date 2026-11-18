@@ -22,24 +22,24 @@
 			<section class="lab-intro" aria-labelledby="page-title">
 				<div>
 					<h1 id="page-title">Who is driving your AI spend?</h1>
-					<p>Run requests as three callers and compare them with the metadata from <a href="https://www.cloudflare.com/products/ai-gateway">AI Gateway</a>.</p>
+					<p>Run requests as three user types and compare them with the metadata from <a href="https://www.cloudflare.com/products/ai-gateway">AI Gateway</a>.</p>
 				</div>
 			</section>
 
-			<section class="lab-card caller-card" aria-labelledby="caller-heading">
+			<section class="lab-card user-type-card" aria-labelledby="user-type-heading">
 				<div class="lab-section-heading">
-					<div><h2 id="caller-heading">Run a sample request</h2></div>
+					<div><h2 id="user-type-heading">Run a sample request</h2></div>
 				</div>
-				<div class="caller-actions">
-					<button class="caller-button" type="button" data-caller="free" disabled>
+				<div class="user-type-actions">
+					<button class="user-type-button" type="button" data-user-type="free" disabled>
 						<strong>Free user</strong>
 						<span class="run-label"><span class="run-label-copy">Run request<span class="run-spinner" aria-hidden="true" hidden></span></span><span aria-hidden="true">↗</span></span>
 					</button>
-					<button class="caller-button" type="button" data-caller="pro" disabled>
+					<button class="user-type-button" type="button" data-user-type="pro" disabled>
 						<strong>Pro user</strong>
 						<span class="run-label"><span class="run-label-copy">Run request<span class="run-spinner" aria-hidden="true" hidden></span></span><span aria-hidden="true">↗</span></span>
 					</button>
-					<button class="caller-button caller-button-bot" type="button" data-caller="bot" data-count="4" disabled>
+					<button class="user-type-button user-type-button-bot" type="button" data-user-type="bot" data-count="4" disabled>
 						<strong>Background bot</strong>
 						<span class="run-label"><span class="run-label-copy">Run bot · 4 requests<span class="run-spinner" aria-hidden="true" hidden></span></span><span aria-hidden="true">↗</span></span>
 					</button>
@@ -62,8 +62,8 @@
 					</div>
 					<div class="receipt-scroll">
 						<table class="receipt-table">
-							<caption class="sr-only">Completed AI requests and the caller attribution visible to the gateway</caption>
-							<thead><tr><th scope="col">Time</th><th scope="col">Who clicked</th><th scope="col">Gateway sees</th><th scope="col">Model</th><th scope="col">Status</th></tr></thead>
+							<caption class="sr-only">Completed AI requests and the user type visible to the gateway</caption>
+							<thead><tr><th scope="col">Time</th><th scope="col">User type</th><th scope="col">Gateway sees</th><th scope="col">Model</th><th scope="col">Status</th></tr></thead>
 							<tbody id="receipt">
 								<tr class="receipt-empty-row"><td colspan="5">Your completed requests will appear here.</td></tr>
 							</tbody>

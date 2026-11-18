@@ -1,24 +1,18 @@
 const PROMPT = "Reply with OK only.";
 
-export const CALLERS = {
+export const USER_TYPES = {
 	free: {
 		label: "Free user",
-		tier: "free",
-		task: "quick-summary",
 		prompt: PROMPT,
 	},
 	pro: {
 		label: "Pro user",
-		tier: "pro",
-		task: "deep-analysis",
 		prompt: PROMPT,
 	},
 	bot: {
 		label: "Background bot",
-		tier: "background",
-		task: "ticket-review",
 		prompt: PROMPT,
 	},
 } as const;
 
-export type Caller = keyof typeof CALLERS;
+export type UserType = keyof typeof USER_TYPES;

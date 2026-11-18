@@ -1,11 +1,11 @@
-const buttons = [...document.querySelectorAll(".caller-button")];
+const buttons = [...document.querySelectorAll(".user-type-button")];
 const receipt = document.querySelector("#receipt");
 const breakdown = document.querySelector("#breakdown");
 const breakdownEmpty = document.querySelector("#breakdown-empty");
 const requestCount = document.querySelector("#request-count");
 let config;
 let totalRequests = 0;
-const activeCallers = new Set();
+const activeUserTypes = new Set();
 const breakdownCounts = new Map();
 
 function appendCell(row, text) {
@@ -38,13 +38,13 @@ function renderBreakdown() {
 	}
 }
 
-function addReceipt(result, caller) {
+function addReceipt(result, userType) {
 	const emptyRow = receipt.querySelector(".receipt-empty-row");
 	emptyRow?.remove();
 	const row = document.createElement("tr");
 	row.className = `receipt-row receipt-${result.status || "error"}`;
 	if (result.error) row.title = result.error;
-	const callerInfo = config.callers.find((item) => item.id === caller);
+	const userTypeInfo = config.userTypes.find((item) => item.id === userType);
 	const model = result.modelSize && result.model
 		? `${result.modelSize} · ${result.model}`
 		: result.model ?? config.model;
@@ -56,7 +56,7 @@ function addReceipt(result, caller) {
 				? "Downgraded"
 				: "Error";
 	appendCell(row, new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" }));
-	appendCell(row, result.callerLabel ?? callerInfo?.label ?? caller);
+	appendCell(row, result.userTypeLabel ?? userTypeInfo?.label ?? userType);
 	appendCell(row, result.seenAs ?? "Unavailable");
 	appendCell(row, model);
 	appendCell(row, result.statusCode ? `${status} · HTTP ${result.statusCode}` : status);
@@ -69,30 +69,30 @@ function addReceipt(result, caller) {
 	renderBreakdown();
 }
 
-async function runRequest(caller) {
+async function runRequest(userType) {
 	try {
 		const response = await fetch("/api/run", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ caller }),
+			body: JSON.stringify({ user_type: userType }),
 		});
 		const payload = await response.json().catch(() => null);
 		const result = payload && typeof payload === "object" ? payload : {};
 		if (!result.status) result.status = response.ok ? "ok" : "error";
-		addReceipt(result, caller);
+		addReceipt(result, userType);
 	} catch (error) {
 		addReceipt({
 			status: "error",
 			seenAs: "Gateway status unavailable",
 			model: config.model,
 			error: error instanceof Error ? error.message : "The request failed.",
-		}, caller);
+		}, userType);
 	}
 }
 
 function renderButtons() {
 	for (const button of buttons) {
-		const running = activeCallers.has(button.dataset.caller);
+		const running = activeUserTypes.has(button.dataset.userType);
 		button.disabled = running || !config;
 		button.querySelector(".run-spinner").hidden = !running;
 		if (running) button.setAttribute("aria-busy", "true");
@@ -102,15 +102,15 @@ function renderButtons() {
 
 for (const button of buttons) {
 	button.addEventListener("click", async () => {
-		const caller = button.dataset.caller;
-		if (!config || activeCallers.has(caller)) return;
+		const userType = button.dataset.userType;
+		if (!config || activeUserTypes.has(userType)) return;
 		const count = Math.max(1, Number(button.dataset.count) || 1);
-		activeCallers.add(caller);
+		activeUserTypes.add(userType);
 		renderButtons();
 		try {
-			for (let index = 0; index < count; index += 1) await runRequest(caller);
+			for (let index = 0; index < count; index += 1) await runRequest(userType);
 		} finally {
-			activeCallers.delete(caller);
+			activeUserTypes.delete(userType);
 			renderButtons();
 		}
 	});
