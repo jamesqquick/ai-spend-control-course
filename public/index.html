@@ -22,7 +22,7 @@
 			<section class="lab-intro" aria-labelledby="page-title">
 				<div>
 					<h1 id="page-title">Who is driving your AI spend?</h1>
-					<p>Run requests as three user types and compare them with the metadata from <a href="https://www.cloudflare.com/products/ai-gateway">AI Gateway</a>.</p>
+					<p>Run requests as three user types and compare the metadata sent to <a href="https://www.cloudflare.com/products/ai-gateway">AI Gateway</a>, selected model, and response status.</p>
 				</div>
 			</section>
 
@@ -62,8 +62,8 @@
 					</div>
 					<div class="receipt-scroll">
 						<table class="receipt-table">
-							<caption class="sr-only">Completed AI requests and the user type visible to the gateway</caption>
-							<thead><tr><th scope="col">Time</th><th scope="col">User type</th><th scope="col">Gateway sees</th><th scope="col">Model</th><th scope="col">Status</th></tr></thead>
+							<caption class="sr-only">Completed AI requests with their request metadata, selected model, and response status</caption>
+							<thead><tr><th scope="col">Time</th><th scope="col">User type</th><th scope="col">Request metadata</th><th scope="col">Model</th><th scope="col">Status</th></tr></thead>
 							<tbody id="receipt">
 								<tr class="receipt-empty-row"><td colspan="5">Your completed requests will appear here.</td></tr>
 							</tbody>

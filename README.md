@@ -1,6 +1,6 @@
 # AI spend control course solution
 
-The lab sends three user types through AI Gateway. The Worker attaches a single metadata property, `user_type`, reads the Gateway log for the recorded metadata and model, and shows each result in the receipt. All three user types send the same short test prompt.
+The lab sends three user types through AI Gateway. The Worker attaches a single metadata property, `user_type`, and requests the raw inference response with `returnRawResponse: true`. Each receipt shows the metadata sent by the app and the model and HTTP status from that response. All three user types send the same short test prompt.
 
 ## Configure the Gateway
 
@@ -37,7 +37,9 @@ The `bot_budget` step counts only bot requests, keyed by `metadata.user_type`. I
 
 The browser submits `POST /api/run` with `user_type` set to `free`, `pro`, or `bot`, for example `{ "user_type": "free" }`. The Worker validates the type against `USER_TYPES` in `src/demo-data.ts` before attaching `{ user_type: userType }` as Gateway metadata. In a real application, derive the user type from trusted account or job information.
 
-The receipt shows the metadata and model recorded in the Gateway log. Click Background bot to send 4 requests in sequence. With a fresh allowance and successful big-model calls, the first 3 use the big model, and the fourth uses the small model and shows **Downgraded**. A big-model failure can also select its smaller backup, so inspect Gateway logs to distinguish it from an exhausted allowance. A spend-limit rejection shows as **Blocked**.
+Receipts use the inference response body, HTTP status, and `cf-aig-log-id` header. The app does not fetch Gateway logs while handling a request. If the response omits the selected model, the receipt shows the configured route name. Check Gateway logs separately to verify recorded metadata and route details. The response HTTP status can differ from the upstream status in a Gateway log.
+
+Click Background bot to send 4 requests in sequence. With a fresh allowance and successful big-model calls, the first 3 use the big model, and the fourth uses the small model and shows **Downgraded**. A big-model failure can also select its smaller backup, so inspect Gateway logs to distinguish it from an exhausted allowance. A spend-limit rejection shows as **Blocked**.
 
 ## Run locally
 

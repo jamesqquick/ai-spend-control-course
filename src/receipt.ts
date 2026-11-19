@@ -1,30 +1,47 @@
 import { USER_TYPES, type UserType } from "./demo-data";
-import { getGatewayTrace } from "./gateway-trace";
+import { getGatewayMode } from "./gateway-trace";
 
 type ReceiptInput = {
 	model: string;
 	userType: UserType;
+	metadata?: Record<string, string>;
+	response?: Response;
 	errorMessage?: string;
 };
 
-export async function createReceiptResponse({ model, userType, errorMessage }: ReceiptInput): Promise<Response> {
-	const failed = errorMessage !== undefined;
-	const trace = await getGatewayTrace(model);
-	const status = classifyStatus(trace.statusCode, failed, errorMessage, userType, trace.model);
+export async function createReceiptResponse({ model, userType, metadata, response, errorMessage }: ReceiptInput): Promise<Response> {
+	let payload: unknown;
+	try {
+		payload = await response?.json();
+	} catch {
+		errorMessage ??= "The model returned an invalid JSON response.";
+	}
+	const responseModel = getResponseModel(payload) ?? model;
+	const statusCode = response?.status ?? null;
+	const failed = !response?.ok || errorMessage !== undefined;
+	const status = classifyStatus(statusCode, failed, errorMessage, userType, responseModel);
+	if (failed) errorMessage ??= statusCode ? `The model request failed with HTTP ${statusCode}.` : "The model request failed.";
 	return Response.json(
 		{
 			user_type: userType,
 			userTypeLabel: USER_TYPES[userType].label,
-			seenAs: trace.available ? formatMetadata(trace.metadata) : "Gateway log unavailable",
-			model: trace.model,
-			modelSize: modelSize(trace.model),
+			seenAs: getGatewayMode() === "gateway" ? formatMetadata(metadata) : "not routed through Gateway",
+			model: responseModel,
+			modelSize: modelSize(responseModel),
 			status,
-			statusCode: trace.statusCode,
-			logId: trace.logId,
+			statusCode,
+			logId: response?.headers.get("cf-aig-log-id") ?? null,
 			...(failed ? { error: errorMessage } : {}),
 		},
-		{ status: responseStatus(status, trace.statusCode) },
+		{ status: responseStatus(status, statusCode) },
 	);
+}
+
+function getResponseModel(payload: unknown): string | undefined {
+	if (typeof payload !== "object" || payload === null) return;
+	if ("model" in payload && typeof payload.model === "string") return payload.model;
+	const result = "result" in payload ? payload.result : undefined;
+	if (typeof result === "object" && result !== null && "model" in result && typeof result.model === "string") return result.model;
 }
 
 function formatMetadata(metadata: Record<string, string | number | boolean | null | bigint> | null | undefined): string {

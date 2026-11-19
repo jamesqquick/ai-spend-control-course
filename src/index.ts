@@ -27,15 +27,17 @@ export default {
 			user_type: userType,
 		};
 
+		let response: Response | undefined;
 		let errorMessage: string | undefined;
 		try {
-			await env.AI.run(
+			const result = await env.AI.run(
 				MODEL,
 				{
 					messages: [{ role: "user", content: USER_TYPES[userType].prompt }],
 					max_tokens: 8,
 				},
 				{
+					returnRawResponse: true,
 					gateway: {
 						id: env.GATEWAY_ID,
 						collectLog: true,
@@ -44,6 +46,8 @@ export default {
 					},
 				},
 			);
+			if (result instanceof Response) response = result;
+			else errorMessage = "The model request did not return an HTTP response.";
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : "The model request failed.";
 		}
@@ -51,6 +55,8 @@ export default {
 		return createReceiptResponse({
 			model: MODEL,
 			userType,
+			metadata,
+			response,
 			errorMessage,
 		});
 	},
