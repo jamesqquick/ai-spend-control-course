@@ -85,7 +85,7 @@ async function runRequest(userType) {
 	} catch (error) {
 		addReceipt({
 			status: "error",
-			seenAs: "Gateway status unavailable",
+			seenAs: "Metadata unavailable",
 			model: config.model,
 			error: error instanceof Error ? error.message : "The request failed.",
 		}, userType);

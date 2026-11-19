@@ -21,7 +21,7 @@
 			<section class="lab-intro" aria-labelledby="page-title">
 				<div>
 					<h1 id="page-title">Who is driving your AI spend?</h1>
-					<p>Run requests as three user types and compare the selected type with what the model gateway can see. This lab sends real requests. Model-generated answers are not shown; inspect the receipt and Gateway logs instead.</p>
+					<p>Run requests as three user types and compare the request metadata, selected model, and response status. This lab sends real requests. Model-generated answers are not shown; inspect the receipt and Gateway logs instead.</p>
 				</div>
 			</section>
 
@@ -48,7 +48,7 @@
 			<div class="lab-dashboard">
 				<section class="lab-card breakdown-card" aria-labelledby="breakdown-heading">
 					<div class="lab-section-heading">
-						<div><h2 id="breakdown-heading">Who Gateway thinks is spending</h2></div>
+						<div><h2 id="breakdown-heading">Requests by metadata</h2></div>
 					</div>
 					<div class="breakdown-empty" id="breakdown-empty">Send a request to start the breakdown.</div>
 					<div class="breakdown-list" id="breakdown" aria-live="polite"></div>
@@ -61,8 +61,8 @@
 					</div>
 					<div class="receipt-scroll">
 						<table class="receipt-table">
-							<caption class="sr-only">Completed AI requests and the user type visible to the gateway</caption>
-							<thead><tr><th scope="col">Time</th><th scope="col">User type</th><th scope="col">Gateway sees</th><th scope="col">Model</th><th scope="col">Status</th></tr></thead>
+							<caption class="sr-only">Completed AI requests with their request metadata, selected model, and response status</caption>
+							<thead><tr><th scope="col">Time</th><th scope="col">User type</th><th scope="col">Request metadata</th><th scope="col">Model</th><th scope="col">Status</th></tr></thead>
 							<tbody id="receipt">
 								<tr class="receipt-empty-row"><td colspan="5">Your completed requests will appear here.</td></tr>
 							</tbody>

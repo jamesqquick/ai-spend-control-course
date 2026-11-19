@@ -23,14 +23,24 @@ export default {
 			return Response.json({ error: input.error }, { status: 400 });
 		}
 		const { userType } = input;
+		const metadata = {};
 
 		const startedAt = Date.now();
+		let response: Response | undefined;
 		let errorMessage: string | undefined;
 		try {
-			await env.AI.run(MODEL, {
-				messages: [{ role: "user", content: USER_TYPES[userType].prompt }],
-				max_tokens: 8,
-			});
+			const result = await env.AI.run(
+				MODEL,
+				{
+					messages: [{ role: "user", content: USER_TYPES[userType].prompt }],
+					max_tokens: 8,
+				},
+				{
+					returnRawResponse: true,
+				},
+			);
+			if (result instanceof Response) response = result;
+			else errorMessage = "The model request did not return an HTTP response.";
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : "The model request failed.";
 		}
@@ -38,6 +48,8 @@ export default {
 		return createReceiptResponse({
 			model: MODEL,
 			userType,
+			metadata,
+			response,
 			startedAt,
 			errorMessage,
 		});
